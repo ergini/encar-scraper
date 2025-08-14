@@ -48,6 +48,36 @@ const getCleanUrl = (url) => {
   return url.split("?")[0];
 };
 
+// Function to save car link to JSON file
+const saveCarLink = (url, folderName) => {
+  try {
+    const dataFile = path.join(process.cwd(), "car_links.json");
+    let carLinks = [];
+
+    // Read existing data if file exists
+    if (fs.existsSync(dataFile)) {
+      const existingData = fs.readFileSync(dataFile, "utf8");
+      carLinks = JSON.parse(existingData);
+    }
+
+    // Add new car link with timestamp
+    const carLink = {
+      url: url,
+      folderName: folderName,
+      timestamp: new Date().toISOString(),
+      carId: extractCarId(url),
+    };
+
+    carLinks.push(carLink);
+
+    // Save back to file
+    fs.writeFileSync(dataFile, JSON.stringify(carLinks, null, 2));
+    console.log(`💾 Car link saved to: ${dataFile}`);
+  } catch (error) {
+    console.log(`⚠️ Could not save car link: ${error.message}`);
+  }
+};
+
 (async () => {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -330,6 +360,9 @@ const getCleanUrl = (url) => {
         console.log(`   - Existing files: ${duplicateCount.file}`);
       }
       console.log(`📁 Images saved to: ${folder}`);
+
+      // Save car link to JSON file
+      saveCarLink(url, folderName);
 
       // Open the folder after download is complete
       console.log(`🔍 Opening folder...`);
